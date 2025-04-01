@@ -16,14 +16,12 @@ typedef struct Chunk_List{
     size_t size;
     Heap_Chunk chunks[CHUNK_CAP];
 } Chunk_List; 
-
+//prints out chunks start ptr and size of chunks in list
+void chunk_list_dump(const Chunk_List *list);
 //allocs size bytes
 void *heap_alloc(size_t size);
 
 //frees allocated chunks
 void heap_free(void *ptr);
-
-//prints out chunks start ptr and size of chunks in list
-void chunk_list_dump(const Chunk_List *list);
 
 #endif

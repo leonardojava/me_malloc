@@ -1,19 +1,20 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "./heap.h"
+#include "heap.h"
 #define CAP 640000 //640 kilobytes 
 #define CHUNK_CAP 1024 //fuck it why not
 
+//so I think the idea of having a heap byte array will be redudant when I use mmap to request more memory to manage
+//the problem is I need to worry about:
+//memory alignment
+//storing the chunks I mmap together despite mmap calls returning non-contigious pointers (usually? not promised)
+//I think the move is mmap 640 kb of memory initially as our heap into the freed list
+//when we call alloc and cannot find a valid chunk we merge then we try find again and then we mmap more and
+//add that as another chunk into free list
+//genuinely do not understand memory alignment
+
 char heap[CAP] = {0};
 
-typedef struct Heap_Chunk{
-    void* start;
-    size_t size;
-} Heap_Chunk;
-typedef struct Chunk_List{
-    size_t size;
-    Heap_Chunk chunks[CHUNK_CAP];
-} Chunk_List; 
 Chunk_List heap_alloced = {0}; //alloced chunks
 Chunk_List heap_freed = {
     .size = 1,
@@ -103,7 +104,13 @@ void *heap_alloc(size_t size){
 //basically just find chunk insert it into freed list then remove it from alloced list
 void heap_free(void *ptr){
     const int index = chunk_find(&heap_alloced, ptr);
-    assert(index >= 0);
+    if(index < 0){
+        printf("ptr not found");
+        return;
+    }
     chunk_insert(&heap_freed, heap_alloced.chunks[index].start, heap_alloced.chunks[index].size);
     chunk_remove(&heap_alloced, (size_t)index);
+}
+int main(){
+    return 0;
 }
